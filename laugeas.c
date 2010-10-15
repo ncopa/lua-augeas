@@ -11,6 +11,8 @@
 #define VERSION "unknown"
 #endif
 
+#define LUA_FILEHANDLE	"FILE*"
+
 struct aug_flagmap {
 	const char *name;
 	int value;
@@ -95,27 +97,51 @@ static int Paug_close(lua_State *L)
 	return 0;
 }
 
+static int pusherror(lua_State *L, augeas *aug, const char *info)
+{
+	lua_pushnil(L);
+	if (info==NULL)
+		lua_pushstring(L, aug_error_message(aug));
+	else
+		lua_pushfstring(L, "%s: %s", info, aug_error_message(aug));
+	lua_pushinteger(L, aug_error(aug));
+	return 3;
+}
+
+static int pushresult(lua_State *L, int i, augeas *aug, const char *info)
+{
+	if (i < 0)
+		return pusherror(L, aug, info);
+	lua_pushinteger(L, i);
+	return 1;
+}
+
 static int Paug_get(lua_State *L)
 {
 	augeas **a;
 	const char *path;
 	const char *value = NULL;
+	int r;
 
 	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
-	lua_pushinteger(L, aug_get(*a, path, &value));
+	r = aug_get(*a, path, &value);
+	if (r < 0)
+		return pusherror(L, *a, path);
 	lua_pushstring(L, value);
-	return 2;
+	return 1;
 }
 
 static int Paug_print(lua_State *L)
 {
 	augeas **a;
 	const char *path;
+	FILE *f = stdout;
 	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
-	lua_pushinteger(L, aug_print(*a, stdout, path));
-	return 1;
+	if (lua_isuserdata(L, 3))
+		f = *(FILE**) luaL_checkudata(L, 3, LUA_FILEHANDLE);
+	return pushresult(L, aug_print(*a, f, path), *a, path);
 }
 
 static const luaL_reg Paug_methods[] = {
