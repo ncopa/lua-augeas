@@ -248,6 +248,34 @@ static int Paug_print(lua_State *L)
 	return pushresult(L, aug_print(a, f, path), a, path);
 }
 
+static int Paug_error(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	lua_pushinteger(L, aug_error(a));
+	return 1;
+}
+
+static int Paug_error_message(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	lua_pushstring(L, aug_error_message(a));
+	return 1;
+}
+
+static int Paug_error_minor_message(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	lua_pushstring(L, aug_error_minor_message(a));
+	return 1;
+}
+
+static int Paug_error_details(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	lua_pushstring(L, aug_error_details(a));
+	return 1;
+}
+
 static const luaL_reg Paug_methods[] = {
 	{"init",	Paug_init},
 	{"defvar",	Paug_defvar},
@@ -264,6 +292,10 @@ static const luaL_reg Paug_methods[] = {
 	{"save",	Paug_save},
 	{"load",	Paug_load},
 	{"print",	Paug_print},
+	{"error",	Paug_error},
+	{"error_message",	Paug_error_message},
+	{"error_minor_message",	Paug_error_minor_message},
+	{"error_details",	Paug_error_details},
 	{NULL,		NULL}
 };
 
