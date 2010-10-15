@@ -115,6 +115,15 @@ static int Paug_defvar(lua_State *L)
 	return pushresult(L, aug_defvar(a, name, expr), a, NULL);
 }
 
+static int Paug_defnode(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const char *expr = luaL_checkstring(L, 3);
+	const char *value = luaL_checkstring(L, 4);
+	return pushresult(L, aug_defnode(a, name, expr, value, NULL), a, NULL);
+}
+
 static int Paug_close(lua_State *L)
 {
 	augeas *a = Paug_checkarg(L, 1);
@@ -211,6 +220,7 @@ static int Paug_print(lua_State *L)
 static const luaL_reg Paug_methods[] = {
 	{"init",	Paug_init},
 	{"defvar",	Paug_defvar},
+	{"defnode",	Paug_defnode},
 	{"close",	Paug_close},
 	{"get",		Paug_get},
 	{"set",		Paug_set},
