@@ -54,10 +54,6 @@ static int Paug_init(lua_State *L)
 	const char *root = NULL, *loadpath = NULL;
 	int flags = 0;
 
-	a = (augeas **) lua_newuserdata(L, sizeof(augeas *));
-	luaL_getmetatable(L, PAUG_META);
-	lua_setmetatable(L, -2);
-
 	if (lua_istable(L, 1)) {
 		root = get_opt_string_field(L, 1, "root", NULL);
 		loadpath = get_opt_string_field(L, 1, "loadpath", NULL);
@@ -69,13 +65,18 @@ static int Paug_init(lua_State *L)
 		loadpath = luaL_optstring(L, 2, NULL);
 		flags = luaL_optinteger(L, 3, AUG_NONE);
 	}
+
+	a = (augeas **) lua_newuserdata(L, sizeof(augeas *));
+	luaL_getmetatable(L, PAUG_META);
+	lua_setmetatable(L, -2);
+
 	*a = aug_init(root, loadpath, flags);
 	if (*a == NULL)
 		luaL_error(L, "aug_init failed");
 	return 1;
 }
 
-static augeas **Paug_checkarg_index(lua_State *L, int index)
+static augeas **Paug_checkarg(lua_State *L, int index)
 {
 	augeas **a;
 	luaL_checktype(L, index, LUA_TUSERDATA);
@@ -85,16 +86,12 @@ static augeas **Paug_checkarg_index(lua_State *L, int index)
 	return a;
 }
 
-static augeas **Paug_checkarg(lua_State *L)
-{
-	return Paug_checkarg_index(L, 1);
-}
-
 static int Paug_close(lua_State *L)
 {
-	augeas **a = Paug_checkarg(L);
+	augeas **a = Paug_checkarg(L, 1);
 	if (*a)
 		aug_close(*a);
+	*a = NULL;
 	return 0;
 }
 
@@ -104,7 +101,7 @@ static int Paug_get(lua_State *L)
 	const char *path;
 	const char *value = NULL;
 
-	a = Paug_checkarg(L);
+	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
 	lua_pushinteger(L, aug_get(*a, path, &value));
 	lua_pushstring(L, value);
@@ -115,7 +112,7 @@ static int Paug_print(lua_State *L)
 {
 	augeas **a;
 	const char *path;
-	a = Paug_checkarg(L);
+	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
 	lua_pushinteger(L, aug_print(*a, stdout, path));
 	return 1;
@@ -123,6 +120,7 @@ static int Paug_print(lua_State *L)
 
 static const luaL_reg Paug_methods[] = {
 	{"init",	Paug_init},
+	{"close",	Paug_close},
 	{"get",		Paug_get},
 	{"print",	Paug_print},
 	{NULL,		NULL}
