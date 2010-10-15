@@ -68,6 +68,16 @@ static int pushresult(lua_State *L, int i, augeas *aug, const char *info)
 	return 1;
 }
 
+static augeas *Paug_checkarg(lua_State *L, int index)
+{
+	augeas **a;
+	luaL_checktype(L, index, LUA_TUSERDATA);
+	a = (augeas **) luaL_checkudata(L, index, PAUG_META);
+	if (a == NULL)
+		luaL_typerror(L, index, PAUG_META);
+	return *a;
+}
+
 static int Paug_init(lua_State *L)
 {
 	augeas **a;
@@ -97,14 +107,12 @@ static int Paug_init(lua_State *L)
 	return 1;
 }
 
-static augeas *Paug_checkarg(lua_State *L, int index)
+static int Paug_defvar(lua_State *L)
 {
-	augeas **a;
-	luaL_checktype(L, index, LUA_TUSERDATA);
-	a = (augeas **) luaL_checkudata(L, index, PAUG_META);
-	if (a == NULL)
-		luaL_typerror(L, index, PAUG_META);
-	return *a;
+	augeas *a = Paug_checkarg(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const char *expr = luaL_checkstring(L, 3);
+	return pushresult(L, aug_defvar(a, name, expr), a, NULL);
 }
 
 static int Paug_close(lua_State *L)
@@ -202,6 +210,7 @@ static int Paug_print(lua_State *L)
 
 static const luaL_reg Paug_methods[] = {
 	{"init",	Paug_init},
+	{"defvar",	Paug_defvar},
 	{"close",	Paug_close},
 	{"get",		Paug_get},
 	{"set",		Paug_set},
