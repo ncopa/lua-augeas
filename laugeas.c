@@ -49,6 +49,25 @@ static int get_boolean_field(lua_State *L, int index, const char *key)
 	return value;
 }
 
+static int pusherror(lua_State *L, augeas *aug, const char *info)
+{
+	lua_pushnil(L);
+	if (info==NULL)
+		lua_pushstring(L, aug_error_message(aug));
+	else
+		lua_pushfstring(L, "%s: %s", info, aug_error_message(aug));
+	lua_pushinteger(L, aug_error(aug));
+	return 3;
+}
+
+static int pushresult(lua_State *L, int i, augeas *aug, const char *info)
+{
+	if (i < 0)
+		return pusherror(L, aug, info);
+	lua_pushinteger(L, i);
+	return 1;
+}
+
 static int Paug_init(lua_State *L)
 {
 	augeas **a;
@@ -78,70 +97,52 @@ static int Paug_init(lua_State *L)
 	return 1;
 }
 
-static augeas **Paug_checkarg(lua_State *L, int index)
+static augeas *Paug_checkarg(lua_State *L, int index)
 {
 	augeas **a;
 	luaL_checktype(L, index, LUA_TUSERDATA);
 	a = (augeas **) luaL_checkudata(L, index, PAUG_META);
 	if (a == NULL)
 		luaL_typerror(L, index, PAUG_META);
-	return a;
+	return *a;
 }
 
 static int Paug_close(lua_State *L)
 {
-	augeas **a = Paug_checkarg(L, 1);
-	if (*a)
-		aug_close(*a);
-	*a = NULL;
+	augeas *a = Paug_checkarg(L, 1);
+	if (a)
+		aug_close(a);
+	a = NULL;
 	return 0;
-}
-
-static int pusherror(lua_State *L, augeas *aug, const char *info)
-{
-	lua_pushnil(L);
-	if (info==NULL)
-		lua_pushstring(L, aug_error_message(aug));
-	else
-		lua_pushfstring(L, "%s: %s", info, aug_error_message(aug));
-	lua_pushinteger(L, aug_error(aug));
-	return 3;
-}
-
-static int pushresult(lua_State *L, int i, augeas *aug, const char *info)
-{
-	if (i < 0)
-		return pusherror(L, aug, info);
-	lua_pushinteger(L, i);
-	return 1;
 }
 
 static int Paug_get(lua_State *L)
 {
-	augeas **a;
+	augeas *a;
 	const char *path;
 	const char *value = NULL;
 	int r;
 
 	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
-	r = aug_get(*a, path, &value);
+	r = aug_get(a, path, &value);
 	if (r < 0)
-		return pusherror(L, *a, path);
+		return pusherror(L, a, path);
 	lua_pushstring(L, value);
 	return 1;
 }
 
+
 static int Paug_print(lua_State *L)
 {
-	augeas **a;
+	augeas *a;
 	const char *path;
 	FILE *f = stdout;
 	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
 	if (lua_isuserdata(L, 3))
 		f = *(FILE**) luaL_checkudata(L, 3, LUA_FILEHANDLE);
-	return pushresult(L, aug_print(*a, f, path), *a, path);
+	return pushresult(L, aug_print(a, f, path), a, path);
 }
 
 static const luaL_reg Paug_methods[] = {
