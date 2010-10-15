@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -193,6 +195,35 @@ static int Paug_mv(lua_State *L)
 	return pushresult(L, aug_mv(a, src, dst), a, NULL);
 }
 
+static int Paug_matches(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	const char *path = luaL_checkstring(L, 2);
+	return pushresult(L, aug_match(a, path, NULL), a, path);
+}
+
+static int Paug_match(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	const char *path = luaL_checkstring(L, 2);
+	char **match = NULL;
+	int i, n;
+	n = aug_match(a, path, &match);
+	if (n < 0)
+		return pusherror(L, a, path);
+	
+	lua_newtable(L);
+	for (i = 0; i < n; i++) {
+		lua_pushnumber(L, i+1);
+		lua_pushstring(L, match[i]);
+		lua_settable(L, -3);
+		free(match[i]);
+	}
+	free(match);
+	lua_pushinteger(L, n);
+	return 2;
+}
+
 static int Paug_save(lua_State *L)
 {
 	augeas *a = Paug_checkarg(L, 1);
@@ -228,6 +259,8 @@ static const luaL_reg Paug_methods[] = {
 	{"insert",	Paug_insert},
 	{"rm",		Paug_rm},
 	{"mv",		Paug_mv},
+	{"matches",	Paug_matches},
+	{"match",	Paug_match},
 	{"save",	Paug_save},
 	{"load",	Paug_load},
 	{"print",	Paug_print},
