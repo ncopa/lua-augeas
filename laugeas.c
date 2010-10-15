@@ -152,6 +152,15 @@ static int Paug_setm(lua_State *L)
 	return pushresult(L, aug_setm(a, base, sub, value), a, NULL);
 }
 
+static int Paug_insert(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	const char *path = luaL_checkstring(L, 2);
+	const char *label = luaL_checkstring(L, 3);
+	int before = lua_toboolean(L, 4);
+	return pushresult(L, aug_insert(a, path, label, before), a, path);
+}
+
 static int Paug_rm(lua_State *L)
 {
 	augeas *a = Paug_checkarg(L, 1);
@@ -189,6 +198,7 @@ static const luaL_reg Paug_methods[] = {
 	{"get",		Paug_get},
 	{"set",		Paug_set},
 	{"setm",	Paug_setm},
+	{"insert",	Paug_insert},
 	{"rm",		Paug_rm},
 	{"save",	Paug_save},
 	{"load",	Paug_load},
