@@ -128,10 +128,14 @@ static int Paug_defnode(lua_State *L)
 
 static int Paug_close(lua_State *L)
 {
-	augeas *a = Paug_checkarg(L, 1);
-	if (a)
-		aug_close(a);
-	a = NULL;
+	augeas **a;
+	luaL_checktype(L, 1, LUA_TUSERDATA);
+	a = (augeas **) luaL_checkudata(L, 1, PAUG_META);
+
+	if (a && *a) {
+		aug_close(*a);
+		*a = NULL;
+	}
 	return 0;
 }
 
