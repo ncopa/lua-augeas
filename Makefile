@@ -36,8 +36,12 @@ laugeas.o: CFLAGS+=$(AUGEAS_CFLAGS)
 augeas.so: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@  -fPIC -shared $^ $(LIBS)
 
+doc : laugeas.c
+	lunadoc -d ./doc *.c
+
 clean:
 	rm -f augeas.so $(OBJS)
+	rm -rf doc
 
 install: augeas.so
 	install -D augeas.so $(DESTDIR)$(INSTALL_CMOD)/augeas.so

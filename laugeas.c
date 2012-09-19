@@ -1,3 +1,9 @@
+/*
+--- Lua wrapper for Augeas library.
+--
+-- In general, the functions map straight to the C library. See the 
+-- descriptions below for details.
+ */
 #include <stdlib.h>
 
 #include <lua.h>
@@ -281,20 +287,74 @@ static int Paug_error_details(lua_State *L)
 }
 
 static const luaL_reg Paug_methods[] = {
+/*
+--- Initializes the library.
+--
+-- * `params` Table of initialization parameters; all optional. `root` path to
+--   Augeas, `loadpath` to Augeas lenses, and string/boolean pairs for the 
+--   flags in the Taug_flagmap array.
+-- * `[return]` augeas object, used as first parameter in subsequent function
+--   calls
+function init(params)
+ */
 	{"init",	Paug_init},
 	{"defvar",	Paug_defvar},
 	{"defnode",	Paug_defnode},
+/*
+--- Closes the library. Optional; automatically called by garbage collector.
+--
+-- * `augobj` Augeas object from init()
+function close(augobj)
+ */
 	{"close",	Paug_close},
+/*
+--- Gets the value for an Augeas path.
+--
+-- * `augobj` Augeas object from init()
+-- * `path` Augeas path
+-- * `[return]` Value for path
+function get(augobj, path)
+ */
 	{"get",		Paug_get},
+/*
+--- Sets the value for an Augeas path.
+--
+-- * `augobj` Augeas object from init()
+-- * `path` Augeas path
+-- * `value` Value for path
+function set(augobj, path, value)
+ */
 	{"set",		Paug_set},
 	{"setm",	Paug_setm},
 	{"insert",	Paug_insert},
 	{"rm",		Paug_rm},
 	{"mv",		Paug_mv},
 	{"matches",	Paug_matches},
+/*
+--- Collects paths in the Augeas tree.
+--
+-- * `augobj` Augeas object from init()
+-- * `path` Source path to be matched
+-- * `[return]` Array of matching paths
+function match(augobj, path)
+ */
 	{"match",	Paug_match},
 	{"save",	Paug_save},
+/*
+--- Loads the values for the Augeas tree.
+--
+-- * `augobj` Augeas object from init()
+function load(augobj)
+ */
 	{"load",	Paug_load},
+/*
+--- Prints the value(s) for an Augeas path.
+--
+-- * `augobj` Augeas object from init()
+-- * `path` Augeas path
+-- * `file_handle` *optional* open file for output; otherwise uses stdout
+function print(augobj, path, file_handle)
+ */
 	{"print",	Paug_print},
 	{"error",	Paug_error},
 	{"error_message",	Paug_error_message},
