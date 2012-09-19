@@ -16,6 +16,7 @@ LUAPC := $(shell for pc in lua lua5.1; do \
 
 LUA_VERSION := $(shell $(PKGCONFIG) --variable=V $(LUAPC))
 INSTALL_CMOD := $(shell $(PKGCONFIG) --variable=INSTALL_CMOD $(LUAPC))
+LUA_CFLAGS := $(shell $(PKGCONFIG) --cflags $(LUAPC))
 
 
 AUGEAS_LIBS := $(shell $(PKGCONFIG) --libs augeas)
@@ -31,7 +32,7 @@ LDFLAGS += -L/lib
 
 all:	augeas.so
 
-laugeas.o: CFLAGS+=$(AUGEAS_CFLAGS)
+laugeas.o: CFLAGS+=$(AUGEAS_CFLAGS) $(LUA_CFLAGS)
 
 augeas.so: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@  -fPIC -shared $^ $(LIBS)
