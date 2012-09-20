@@ -1,7 +1,7 @@
 /*
 --- Lua wrapper for Augeas library.
 --
--- In general, the functions map straight to the C library. See the 
+-- In general, the functions map straight to the C library. See the
 -- descriptions below for details.
  */
 #include <stdlib.h>
@@ -221,7 +221,7 @@ static int Paug_match(lua_State *L)
 	n = aug_match(a, path, &match);
 	if (n < 0)
 		return pusherror(L, a, path);
-	
+
 	lua_newtable(L);
 	for (i = 0; i < n; i++) {
 		lua_pushnumber(L, i+1);
@@ -291,7 +291,7 @@ static const luaL_reg Paug_methods[] = {
 --- Initializes the library.
 --
 -- * `params` Table of initialization parameters; all optional. `root` path to
---   Augeas, `loadpath` to Augeas lenses, and string/boolean pairs for the 
+--   Augeas, `loadpath` to Augeas lenses, and string/boolean pairs for the
 --   flags in the Taug_flagmap array.
 -- * `[return]` augeas object, used as first parameter in subsequent function
 --   calls
