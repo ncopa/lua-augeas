@@ -168,7 +168,7 @@ static int Paug_set(lua_State *L)
 
 	a = Paug_checkarg(L, 1);
 	path = luaL_checkstring(L, 2);
-	value = luaL_checkstring(L, 3);
+	value = lua_isnil(L, 3) ? NULL : luaL_checkstring(L, 3);
 	return pushresult(L, aug_set(a, path, value), a, path);
 }
 
@@ -177,7 +177,7 @@ static int Paug_setm(lua_State *L)
 	augeas *a = Paug_checkarg(L, 1);
 	const char *base = luaL_checkstring(L, 2);
 	const char *sub= luaL_checkstring(L, 3);
-	const char *value = luaL_checkstring(L, 4);
+	const char *value = lua_isnil(L, 4) ? NULL : luaL_checkstring(L, 4);
 	return pushresult(L, aug_setm(a, base, sub, value), a, NULL);
 }
 
