@@ -1,7 +1,7 @@
 
 PKGCONFIG ?= pkg-config
 
-VERSION = 0.1.1
+VERSION = 0.1.2
 GIT_REV		:= $(shell test -d .git && git describe || echo exported)
 ifneq ($(GIT_REV), exported)
 FULL_VERSION    := $(GIT_REV)
