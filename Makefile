@@ -10,7 +10,7 @@ else
 FULL_VERSION    := $(VERSION)
 endif
 
-LUAPC := $(shell for pc in lua lua5.1; do \
+LUAPC := $(shell for pc in lua lua5.2 lua5.1; do \
 			$(PKGCONFIG) --exists $$pc && echo $$pc && break; \
 		done)
 

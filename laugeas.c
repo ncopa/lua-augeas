@@ -4,6 +4,7 @@
 -- In general, the functions map straight to the C library. See the
 -- descriptions below for details.
  */
+#include <assert.h>
 #include <stdlib.h>
 
 #include <lua.h>
@@ -20,6 +21,18 @@
 #endif
 
 #define LUA_FILEHANDLE	"FILE*"
+
+#if LUA_VERSION_NUM < 502
+#  define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
+#  define luaL_setfuncs(L,l,n) (assert(n==0), luaL_register(L,NULL,l))
+#else
+static int luaL_typerror (lua_State *L, int narg, const char *tname)
+{
+	const char *msg = lua_pushfstring(L, "%s expected, got %s",
+					  tname, luaL_typename(L, narg));
+	return luaL_argerror(L, narg, msg);
+}
+#endif
 
 struct aug_flagmap {
 	const char *name;
@@ -286,7 +299,7 @@ static int Paug_error_details(lua_State *L)
 	return 1;
 }
 
-static const luaL_reg Paug_methods[] = {
+static const luaL_Reg Paug_methods[] = {
 /*
 --- Initializes the library.
 --
@@ -363,7 +376,7 @@ function print(augobj, path, file_handle)
 	{NULL,		NULL}
 };
 
-static const luaL_reg Luag_meta_methods[] = {
+static const luaL_Reg Laug_meta_methods[] = {
 	{"__gc",	Paug_close},
 	{NULL,		NULL}
 };
@@ -372,7 +385,7 @@ static const luaL_reg Luag_meta_methods[] = {
 LUALIB_API int luaopen_augeas(lua_State *L)
 {
 	struct aug_flagmap *f = Taug_flagmap;
-	luaL_register(L, LIBNAME, Paug_methods);
+	luaL_newlib(L, Paug_methods);
 	lua_pushliteral(L, "version");
 	lua_pushliteral(L, VERSION);
 	lua_settable(L, -3);
@@ -385,7 +398,7 @@ LUALIB_API int luaopen_augeas(lua_State *L)
 	}
 
 	luaL_newmetatable(L, PAUG_META);
-	luaL_register(L, NULL, Luag_meta_methods);
+	luaL_setfuncs(L, Laug_meta_methods, 0);
 	lua_pushliteral(L, "__index");
 	lua_pushvalue(L, -3);
 	lua_rawset(L, -3);
