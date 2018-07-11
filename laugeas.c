@@ -299,6 +299,18 @@ static int Paug_error_details(lua_State *L)
 	return 1;
 }
 
+static int Paug_label(lua_State *L)
+{
+	augeas *a = Paug_checkarg(L, 1);
+	const char *path = luaL_checkstring(L, 2);
+	const char *label = NULL;
+	int r = aug_label(a, path, &label);
+	if (r < 0)
+		return pusherror(L, a, path);
+	lua_pushstring(L, label);
+	return 1;
+}
+
 static const luaL_Reg Paug_methods[] = {
 /*
 --- Initializes the library.
@@ -373,6 +385,14 @@ function print(augobj, path, file_handle)
 	{"error_message",	Paug_error_message},
 	{"error_minor_message",	Paug_error_minor_message},
 	{"error_details",	Paug_error_details},
+/*
+--- Lookup the label associated with an Augeas path.
+--
+-- * `augobj` Augeas object from init()
+-- * `path` Augeas path
+function label(augobj, path)
+ */
+	{"label",	Paug_label},
 	{NULL,		NULL}
 };
 
